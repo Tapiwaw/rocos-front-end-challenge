@@ -1,1 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* Globals styling for gauge components */
+.gauge-component-main-wrapper
+{
+    display: flex;
+    flex-direction: column;
+}
+
+.gauge-canvas-wrapper
+{
+    display: flex;
+    justify-content: center;
+    padding: 5px;
+    
+}
