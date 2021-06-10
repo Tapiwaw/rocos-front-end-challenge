@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./cluster-header.component.css']
 })
 export class ClusterHeaderComponent implements OnInit {
-  heading: string = "Telemetry"
+  heading: string = "Rocos Test Telemetry"
   constructor() { }
 
   ngOnInit(): void {

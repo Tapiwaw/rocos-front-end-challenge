@@ -1,0 +1,22 @@
+.auth-form-main-wrapper
+{
+    
+    padding-top: 15px;
+    padding-bottom: 15px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+}
+
+.auth-form-group
+{
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 5px;
+}
+
+.auth-form-group > input
+{
+    width: 400px;
+}

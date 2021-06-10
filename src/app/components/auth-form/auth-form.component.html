@@ -1,0 +1,11 @@
+<div class="auth-form-main-wrapper">
+    <div class="auth-form-group">
+        <label for="response-application-id">Application Id: </label>
+        <input #appIdInput type="text" class="form-control" id="response-application-id" value="">
+    </div>
+    <div class="auth-form-group">
+        <label for="response-application-secret-key">Secret Key: </label>
+        <input #secretKeyInput type="text" class="form-control" id="response-application-secret-key" value="">
+    </div>
+    <button #formActionButton (click)="onStart()" >Start</button>
+</div>

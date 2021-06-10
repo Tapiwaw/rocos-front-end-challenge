@@ -1,7 +1,7 @@
 .app-component-main-wrapper{
     display: flex;
     justify-content: center;
-    background-color: aqua;
+    /* background-color: aqua; */
 }
 
 .app-component-display-container{
@@ -11,7 +11,7 @@
 }
 
 .app-component-cluster-container{
-    background-color: brown;
+    background-color: black;
     display: flex;
     flex-direction: row;
     justify-content: center;
