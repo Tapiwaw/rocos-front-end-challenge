@@ -31,7 +31,7 @@ export class HorizonGaugeComponent implements OnInit {
         {
           this.telemetryService.getTestTelemetrySubject().subscribe((msg) => {
             // console.log(msg);
-            this.draw(msg.payload.roll*100, msg.payload.pitch*100);
+            this.draw(msg.payload.roll, msg.payload.pitch);
           });
         }
       }

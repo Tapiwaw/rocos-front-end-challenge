@@ -31,7 +31,7 @@ export class HeadingGaugeComponent implements OnInit {
         {
           this.telemetryService.getTestTelemetrySubject().subscribe((msg) => {
             // console.log(msg);
-            this.draw(msg.payload.yaw*100);
+            this.draw(msg.payload.yaw);
           });
         }
       }
