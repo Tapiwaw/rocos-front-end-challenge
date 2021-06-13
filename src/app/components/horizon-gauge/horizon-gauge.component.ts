@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { TelemetryService } from '../../services/telemetry.service';
 import { IRocosTelemetryMessage } from 'rocos-js'
 import { Observable, Subscription } from 'rxjs';
+import { drawHeadingMarker } from '../../DrawingUtils';
 
 @Component({
   selector: 'app-horizon-gauge',
@@ -25,8 +26,7 @@ export class HorizonGaugeComponent implements OnInit {
     this.ctx = this.canvas.nativeElement.getContext('2d');
   }
 
-  ngAfterViewInit()
-  {
+  ngAfterViewInit(): void {
     this.draw(this.currentRoll, this.currentPitch);
     this.telemetryService.authentication().subscribe(
       (ready) => 
@@ -55,8 +55,7 @@ export class HorizonGaugeComponent implements OnInit {
     );  
   }
 
-  draw( roll:number, pitch:number )
-  {
+  draw( roll:number, pitch:number ): void {
     // console.log(roll,pitch);
     this.currentRoll = roll;
     this.currentPitch = pitch;
@@ -67,15 +66,14 @@ export class HorizonGaugeComponent implements OnInit {
     this.ctx.translate(radius, radius);
     this.ctx.moveTo(0, 0);
 
-    this.drawHorizon(radius, roll, pitch);
-    this.drawPitchMarkers(radius, roll, pitch);
+    this.drawHorizon(radius, roll);
+    this.drawPitchMarkers(roll, pitch);
     this.drawPointers(radius);
 
     this.ctx.translate(-radius, -radius);
   }
 
-  drawHorizon(radius:number, roll:number, pitch:number)
-  {
+  drawHorizon(radius:number, roll:number): void {
     let startPoint: number = (2*Math.PI) - roll;
     let endPoint: number = Math.PI - roll;
 
@@ -98,41 +96,12 @@ export class HorizonGaugeComponent implements OnInit {
     this.ctx.rotate(-roll);
     for(let i=Math.PI; i<=2*Math.PI+0.1; i+=Math.PI/8)
     {
-      this.drawHeadingMarker( length, weight, lineColour, radius, i, 0, 0);
+      drawHeadingMarker(this.ctx, length, weight, lineColour, radius, i, 0, 0);
     }
     this.ctx.rotate(roll);
   }
 
-  drawHeadingMarker( length:number, LineWidth: number, color:string, radius:number, angle:number, xOrigin:number, yOrigin:number )
-  {
-    let circumferencePoint = this.getCircumferenceXY( radius, angle, xOrigin, yOrigin );
-    let direction = { x: xOrigin - circumferencePoint.x, y: yOrigin -circumferencePoint.y };
-    let mag = Math.sqrt( direction.x*direction.x + direction.y*direction.y );
-    let unitVector = { x:direction.x/mag, y:direction.y/mag };
-
-    let lineEndPoint = { x: (unitVector.x*length)+circumferencePoint.x , y: (unitVector.y*length)+circumferencePoint.y }
-
-    // Vertical line
-    this.ctx.beginPath();
-    this.ctx.strokeStyle = color;
-    this.ctx.lineWidth = LineWidth;
-    this.ctx.lineCap = "round";
-    this.ctx.moveTo(circumferencePoint.x, circumferencePoint.y);
-    this.ctx.lineTo(lineEndPoint.x, lineEndPoint.y);
-    this.ctx.stroke();
-
-  }
-
-  getCircumferenceXY( radius:number, angle:number, xOrigin:number, yOrigin:number )
-  {
-    return {
-              x: radius*Math.cos(angle)+xOrigin,
-              y: radius*Math.sin(angle)+yOrigin
-            };
-  }
-
-  drawPitchMarkers(radius:number, roll:number, pitch:number)
-  {
+  drawPitchMarkers(roll:number, pitch:number): void {
     const spacing:number = 18;
     const longWidth:number = 50;
     const shortWidth:number = 30;
@@ -170,8 +139,7 @@ export class HorizonGaugeComponent implements OnInit {
     this.drawMarker( lineWidth, color, longWidth, currentYOffset, roll, adjustedPitch );
   }
 
-  drawMarker( lineWidth:number, color:string, length:number, yOffset:number, roll: number, pitch:number )
-  {
+  drawMarker( lineWidth:number, color:string, length:number, yOffset:number, roll: number, pitch:number ): void {
     this.ctx.beginPath();
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = lineWidth;
@@ -183,9 +151,7 @@ export class HorizonGaugeComponent implements OnInit {
     this.ctx.rotate(roll);
   }
 
-  
-  drawPointers(radius:number)
-  {
+  drawPointers(radius:number): void {
 
     // Roll Marker
     this.ctx.beginPath();

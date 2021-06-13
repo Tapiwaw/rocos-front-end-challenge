@@ -1,4 +1,3 @@
-import { identifierModuleUrl } from '@angular/compiler';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { TelemetryService } from '../../services/telemetry.service';
 
@@ -37,14 +36,13 @@ export class AuthFormComponent implements OnInit {
     );
   }
 
-  onActionButtonClick()
-  {
+  onActionButtonClick(): void {
     if(this.appIdInput.nativeElement.value === '' || this.secretKeyInput.nativeElement.value === '')
     {
       console.warn("AppId or security key is Invalid");
       return;
     }
-
+  
     if(this.hasStarted)
     {
       this.telemetryService.stop();
@@ -55,4 +53,5 @@ export class AuthFormComponent implements OnInit {
                                           this.secretKeyInput.nativeElement.value);
     }
   }
+  
 }

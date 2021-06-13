@@ -1,7 +1,9 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { TelemetryService } from '../../services/telemetry.service';
-import { IRocosTelemetryMessage } from 'rocos-js'
+import { IRocosTelemetryMessage } from 'rocos-js';
 import { Observable, Subscription } from 'rxjs';
+import { drawHeadingMarker, drawHeadingLabel } from '../../DrawingUtils';
+
 
 @Component({
   selector: 'app-heading-gauge',
@@ -17,6 +19,7 @@ export class HeadingGaugeComponent implements OnInit {
   telemetrySubscription: Subscription;
 
   private ctx: CanvasRenderingContext2D;
+
   currentYaw: number = 0;
 
   constructor(private telemetryService: TelemetryService) { }
@@ -25,8 +28,7 @@ export class HeadingGaugeComponent implements OnInit {
     this.ctx = this.canvas.nativeElement.getContext('2d');
   }
 
-  ngAfterViewInit()
-  {
+  ngAfterViewInit(): void {
     this.draw(this.currentYaw);
     this.telemetryService.authentication().subscribe(
       (ready) => 
@@ -55,8 +57,7 @@ export class HeadingGaugeComponent implements OnInit {
     ); 
   }
 
-  draw( yaw:number )
-  {
+  draw( yaw:number ): void {
     this.currentYaw = yaw;
 
     this.ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
@@ -68,19 +69,21 @@ export class HeadingGaugeComponent implements OnInit {
     this.ctx.rotate(-yaw);
     this.drawHeading(radius);
     this.ctx.rotate(yaw);
-
+    
+    // Draw Heading Arrow
     this.drawLineArrow(0, 40, 0, -40);
     this.ctx.translate(-radius, -radius);
   }
 
-  drawHeading(radius:number)
-  {
+  drawHeading(radius:number): void {
+    // Draw gauge
     this.ctx.beginPath();
     this.ctx.arc(0, 0, radius, 0, 2*Math.PI);
     this.ctx.closePath();
     this.ctx.fillStyle = '#c0c0c0';
     this.ctx.fill();
 
+    // Draw Heading Markers
     const heavyLength = 20;
     const heavyWeight = 5;
     const length = 15;
@@ -93,81 +96,36 @@ export class HeadingGaugeComponent implements OnInit {
       if(count === 1 )
       {
         let offset = { x: -29, y:8 };
-        this.drawHeadingLabel('90', offset, heavyLength, lineColour, radius, i, 0, 0);
-        this.drawHeadingMarker( heavyLength, heavyWeight, lineColour, radius, i, 0, 0);
+        drawHeadingLabel(this.ctx, '90', offset, heavyLength, lineColour, radius, i, 0, 0);
+        drawHeadingMarker(this.ctx, heavyLength, heavyWeight, lineColour, radius, i, 0, 0);
       }
       else if(count === 5 )
       {
         let offset = { x: -18, y:-4 };
-        this.drawHeadingLabel('180', offset, heavyLength, lineColour, radius, i, 0, 0);
-        this.drawHeadingMarker( heavyLength, heavyWeight, lineColour, radius, i, 0, 0);
+        drawHeadingLabel(this.ctx, '180', offset, heavyLength, lineColour, radius, i, 0, 0);
+        drawHeadingMarker(this.ctx,  heavyLength, heavyWeight, lineColour, radius, i, 0, 0);
       }
       else if(count === 9 )
       {
         let offset = { x: 3, y:8 };
-        this.drawHeadingLabel('270', offset, heavyLength, lineColour, radius, i, 0, 0);
-        this.drawHeadingMarker( heavyLength, heavyWeight, lineColour, radius, i, 0, 0);
+        drawHeadingLabel(this.ctx, '270', offset, heavyLength, lineColour, radius, i, 0, 0);
+        drawHeadingMarker(this.ctx,  heavyLength, heavyWeight, lineColour, radius, i, 0, 0);
       }
       else if(count === 13 )
       {
         let offset = { x: -6, y:22 };
-        this.drawHeadingLabel('0', offset, heavyLength, lineColour, radius, i, 0, 0);
-        this.drawHeadingMarker( heavyLength, heavyWeight, lineColour, radius, i, 0, 0);
+        drawHeadingLabel(this.ctx, '0', offset, heavyLength, lineColour, radius, i, 0, 0);
+        drawHeadingMarker(this.ctx, heavyLength, heavyWeight, lineColour, radius, i, 0, 0);
       }
       else
       {
-        this.drawHeadingMarker( length, weight, lineColour, radius, i, 0, 0);
+        drawHeadingMarker(this.ctx, length, weight, lineColour, radius, i, 0, 0);
       }
     }
     
   }
 
-  drawHeadingLabel(text:string, offest, length:number, color:string, radius:number, angle:number, xOrigin:number, yOrigin:number )
-  {
-    let line = this.calcPerpCircumferenceLine(length, radius, angle, xOrigin, yOrigin);
-    
-    this.ctx.font = '25px serif';
-    this.ctx.fillStyle = '#000000';
-    this.ctx.fillText(text, line.toX+offest.x, line.toY+offest.y);
-  }
-
-  drawHeadingMarker( length:number, LineWidth: number, color:string, radius:number, angle:number, xOrigin:number, yOrigin:number )
-  {
-
-    let line = this.calcPerpCircumferenceLine(length, radius, angle, xOrigin, yOrigin);
-
-    // Vertical line
-    this.ctx.beginPath();
-    this.ctx.strokeStyle = color;
-    this.ctx.lineWidth = LineWidth;
-    this.ctx.lineCap = "round";
-    this.ctx.moveTo(line.fromX, line.fromY);
-    this.ctx.lineTo(line.toX, line.toY);
-    this.ctx.stroke();
-  }
-
-  calcPerpCircumferenceLine(length:number, radius:number, angle:number, xOrigin:number, yOrigin:number)
-  {
-    let circumferencePoint = this.getCircumferenceXY( radius, angle, xOrigin, yOrigin );
-    let direction = { x: xOrigin - circumferencePoint.x, y: yOrigin -circumferencePoint.y };
-    let mag = Math.sqrt( direction.x*direction.x + direction.y*direction.y );
-    let unitVector = { x:direction.x/mag, y:direction.y/mag };
-
-    return { fromX: circumferencePoint.x,
-              fromY: circumferencePoint.y,
-              toX: (unitVector.x*length)+circumferencePoint.x,
-              toY: (unitVector.y*length)+circumferencePoint.y };
-  }
-
-  getCircumferenceXY( radius:number, angle:number, xOrigin:number, yOrigin:number )
-  {
-    return {
-              x: radius*Math.cos(angle)+xOrigin,
-              y: radius*Math.sin(angle)+yOrigin
-            };
-  }
-
-  drawLineArrow ( fromX:number, fromY:number, toX:number, toY:number ) {
+  drawLineArrow ( fromX:number, fromY:number, toX:number, toY:number ): void {
     var headlen = 20;
     var theta = 45;
     var arrowX, arrowY;
