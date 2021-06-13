@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { TelemetryService } from '../../services/telemetry.service';
-import { debounceTime } from 'rxjs/operators';
+import { IRocosTelemetryMessage } from 'rocos-js'
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-horizon-gauge',
@@ -11,6 +12,9 @@ export class HorizonGaugeComponent implements OnInit {
   @ViewChild('horizonGaugeCanvas', { static: true })
   canvas: ElementRef<HTMLCanvasElement>;
   
+  telemetryObservable: Observable<IRocosTelemetryMessage>;
+  telemetrySubscription: Subscription;
+
   private ctx: CanvasRenderingContext2D;
   currentRoll: number = 0;
   currentPitch: number = 0;
@@ -25,17 +29,30 @@ export class HorizonGaugeComponent implements OnInit {
   {
     this.draw(this.currentRoll, this.currentPitch);
     this.telemetryService.authentication().subscribe(
-      (successful) => 
+      (ready) => 
       {
-        if(successful)
+        if(ready)
         {
-          this.telemetryService.getTestTelemetrySubject().subscribe((msg) => {
-            // console.log(msg);
-            this.draw(msg.payload.roll, msg.payload.pitch);
-          });
+          this.telemetryObservable = this.telemetryService.getTestTelemetryObservable();
+          this.telemetrySubscription = this.telemetryObservable.subscribe((msg) => {
+                                                                            // console.log(msg);
+                                                                            this.draw(msg.payload.roll, msg.payload.pitch);
+                                                                          });
+          console.log("Horizon gauge telemetry subscribed");
+        }
+        else
+        {
+          if(this.telemetrySubscription !== undefined)
+          {
+            if(!this.telemetrySubscription.closed)
+            {
+              console.log("Horizon gauge telemetry unsubscribed");
+              this.telemetrySubscription.unsubscribe();
+            }
+          }
         }
       }
-    );    
+    );  
   }
 
   draw( roll:number, pitch:number )

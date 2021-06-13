@@ -20,9 +20,24 @@ export class AuthFormComponent implements OnInit {
   constructor(private telemetryService: TelemetryService) {}
 
   ngOnInit(): void {
+    this.telemetryService.authentication().subscribe(
+      (ready) => 
+      {
+        if(ready)
+        {
+          this.hasStarted = true;
+          this.actionButton.nativeElement.innerHTML = "Stop";
+        }
+        else
+        {
+          this.hasStarted = false;
+          this.actionButton.nativeElement.innerHTML = "Start";
+        }
+      }
+    );
   }
 
-  onStart()
+  onActionButtonClick()
   {
     if(this.appIdInput.nativeElement.value === '' || this.secretKeyInput.nativeElement.value === '')
     {
@@ -30,7 +45,14 @@ export class AuthFormComponent implements OnInit {
       return;
     }
 
-    this.telemetryService.authenticate(this.appIdInput.nativeElement.value, 
-                                        this.secretKeyInput.nativeElement.value);
+    if(this.hasStarted)
+    {
+      this.telemetryService.stop();
+    }
+    else
+    {
+      this.telemetryService.authenticate(this.appIdInput.nativeElement.value, 
+                                          this.secretKeyInput.nativeElement.value);
+    }
   }
 }

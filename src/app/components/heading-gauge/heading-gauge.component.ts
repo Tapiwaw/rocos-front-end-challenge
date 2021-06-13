@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { TelemetryService } from '../../services/telemetry.service';
-import { debounceTime } from 'rxjs/operators';
+import { IRocosTelemetryMessage } from 'rocos-js'
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-heading-gauge',
@@ -11,7 +12,10 @@ export class HeadingGaugeComponent implements OnInit {
 
   @ViewChild('headingGaugeCanvas', { static: true })
   canvas: ElementRef<HTMLCanvasElement>;
-  
+
+  telemetryObservable: Observable<IRocosTelemetryMessage>;
+  telemetrySubscription: Subscription;
+
   private ctx: CanvasRenderingContext2D;
   currentYaw: number = 0;
 
@@ -25,14 +29,27 @@ export class HeadingGaugeComponent implements OnInit {
   {
     this.draw(this.currentYaw);
     this.telemetryService.authentication().subscribe(
-      (successful) => 
+      (ready) => 
       {
-        if(successful)
+        if(ready)
         {
-          this.telemetryService.getTestTelemetrySubject().subscribe((msg) => {
-            // console.log(msg);
-            this.draw(msg.payload.yaw);
-          });
+          this.telemetryObservable = this.telemetryService.getTestTelemetryObservable();
+          this.telemetrySubscription = this.telemetryObservable.subscribe((msg) => {
+                                                                            // console.log(msg);
+                                                                            this.draw(msg.payload.yaw);
+                                                                          });
+          console.log("Heading gauge telemetry subscribed");
+        }
+        else
+        {
+          if(this.telemetrySubscription !== undefined)
+          {
+            if(!this.telemetrySubscription.closed)
+            {
+              console.log("Heading gauge telemetry unsubscribed");
+              this.telemetrySubscription.unsubscribe();
+            }
+          }
         }
       }
     ); 
